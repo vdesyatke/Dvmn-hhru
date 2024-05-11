@@ -10,17 +10,8 @@ POPULAR_LANGUAGES = (
 )
 
 
-def get_vacancies(area=1, only_with_salary=False, period=3650,
-                  language=None, per_page=100, page=0):
-    url = 'https://api.hh.ru/vacancies'
-    params = {
-        'text': f'Программист {language}',
-        'area': area,
-        'only_with_salary': only_with_salary,
-        'period': period,
-        'per_page': per_page,
-        'page': page,
-    }
+def get_vacancies(url, params, page=0):
+    params[page] = page
     response = requests.get(url, params=params)
     response.raise_for_status()
     return response.json()['items']
@@ -39,12 +30,12 @@ def get_all_vacancies_hh(area=1, only_with_salary=False, per_page=100,
     }
     response = requests.get(url, params=params)
     response.raise_for_status()
-    response_json = response.json()
-    pages = response_json['pages']
-    vacancies = response_json['items']
+    response_json_as_dict = response.json()
+    pages = response_json_as_dict['pages']
+    vacancies = response_json_as_dict['items']
     for page in range(1, pages):
         vacancies.extend(
-            get_vacancies(period=30, language=language, page=page, only_with_salary=only_with_salary)
+            get_vacancies(url=url, params=params, page=page)
         )
     return vacancies
 
@@ -123,10 +114,10 @@ def get_all_vacancies_sj(secret_key, town=4, count=40, language=None):
     }
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
-    response_json = response.json()
+    response_json_as_dict = response.json()
 
-    pages = (response_json['total'] + count - 1) // count
-    vacancies = response_json['objects']
+    pages = (response_json_as_dict['total'] + count - 1) // count
+    vacancies = response_json_as_dict['objects']
     for page in range(1, pages):
         params['page'] = page
         response = requests.get(url, headers=headers, params=params)
