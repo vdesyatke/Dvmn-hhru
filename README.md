@@ -1,5 +1,5 @@
 # Dvmn-hhru
-Programmers' salaries statistics on hh.ru and superjob.ru vacancies
+Programmers' salaries statistics on [hh.ru](www.hh.ru) and [superjob.ru](www.superjob.ru) vacancies
 
 ## Description
 The code prints out programmers' salaries statistics for vacancies placed at hh.ru and superjob.ru:
