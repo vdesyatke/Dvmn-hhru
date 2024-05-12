@@ -16,7 +16,7 @@ The code prints out programmers' salaries statistics for vacancies placed at hh.
 pip install -r requirements.txt
 ```
 4. Hh.ru requires no token or password. To see superjob.ru statistics please get your secret key [here](https://api.superjob.ru/register). 
-5. In the root directory of the project create a new file named `.env` with an environment variable `SECRET_KEY={your_secret_key_here}`.
+5. In the root directory of the project create a new file named `.env` with an environment variable `SJ_SECRET_KEY={your_secret_key_here}`.
 
 ## Example of use
 ```python
