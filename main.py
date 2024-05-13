@@ -30,9 +30,9 @@ def get_all_vacancies_hh(area=1, only_with_salary=False, per_page=100,
     }
     response = requests.get(url, params=params)
     response.raise_for_status()
-    response_json_as_dict = response.json()
-    pages = response_json_as_dict['pages']
-    vacancies = response_json_as_dict['items']
+    vacancies_data = response.json()
+    pages = vacancies_data['pages']
+    vacancies = vacancies_data['items']
     for page in range(1, pages):
         vacancies.extend(
             get_vacancies(url=url, params=params, page=page)
@@ -41,7 +41,7 @@ def get_all_vacancies_hh(area=1, only_with_salary=False, per_page=100,
 
 
 def get_salaries_stats_hh(popular_languages=POPULAR_LANGUAGES):
-    table_data = []
+    salaries_stats = []
     for language in popular_languages:
         vacancies = get_all_vacancies_hh(language=language, period=30, only_with_salary=True)
         countable_salaries = tuple(
@@ -54,10 +54,10 @@ def get_salaries_stats_hh(popular_languages=POPULAR_LANGUAGES):
             )
         except ZeroDivisionError:
             average_salary = 'No salary info for this programming language'
-        table_data.append(
+        salaries_stats.append(
             (language, len(vacancies), vacancies_processed, average_salary),
         )
-    return table_data
+    return salaries_stats
 
 
 def print_salaries(table_data, title):
@@ -114,10 +114,10 @@ def get_all_vacancies_sj(secret_key, town=4, count=40, language=None):
     }
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
-    response_json_as_dict = response.json()
+    vacancies_data = response.json()
 
-    pages = (response_json_as_dict['total'] + count - 1) // count
-    vacancies = response_json_as_dict['objects']
+    pages = (vacancies_data['total'] + count - 1) // count
+    vacancies = vacancies_data['objects']
     for page in range(1, pages):
         params['page'] = page
         response = requests.get(url, headers=headers, params=params)
@@ -127,7 +127,7 @@ def get_all_vacancies_sj(secret_key, town=4, count=40, language=None):
 
 
 def get_salaries_stats_sj(secret_key, popular_languages=POPULAR_LANGUAGES):
-    table_data = []
+    salaries_stats = []
     for language in popular_languages:
         vacancies = get_all_vacancies_sj(secret_key=secret_key, language=language)
         countable_salaries = tuple(
@@ -140,19 +140,19 @@ def get_salaries_stats_sj(secret_key, popular_languages=POPULAR_LANGUAGES):
             )
         except ZeroDivisionError:
             average_salary = 'No salary info for this programming language'
-        table_data.append(
+        salaries_stats.append(
             (language, len(vacancies), vacancies_processed, average_salary),
         )
-    return table_data
+    return salaries_stats
 
 
 def main():
     env = Env()
     env.read_env()
-    table_data_sj = get_salaries_stats_sj(secret_key=env('SJ_SECRET_KEY'))
-    print_salaries(table_data=table_data_sj, title='SuperJob Moscow')
-    table_data_hh = get_salaries_stats_hh()
-    print_salaries(table_data=table_data_hh, title='HeadHunter Moscow')
+    salaries_stats_sj = get_salaries_stats_sj(secret_key=env('SJ_SECRET_KEY'))
+    print_salaries(table_data=salaries_stats_sj, title='SuperJob Moscow')
+    salaries_stats_hh = get_salaries_stats_hh()
+    print_salaries(table_data=salaries_stats_hh, title='HeadHunter Moscow')
 
 
 if __name__ == '__main__':
