@@ -11,15 +11,16 @@ POPULAR_LANGUAGES = (
 
 
 def get_vacancies(url, params, page=0):
-    params[page] = page
+    params['page'] = page
+    if page == 2:
+        print(params)
     response = requests.get(url, params=params)
     response.raise_for_status()
     return response.json()['items']
 
 
 def get_all_vacancies_hh(area=1, only_with_salary=False, per_page=100,
-                         period=3650, language=None):
-    language = language or ''
+                         period=3650, language=''):
     url = 'https://api.hh.ru/vacancies'
     params = {
         'text': f'Программист {language}',
