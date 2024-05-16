@@ -30,9 +30,9 @@ def get_all_vacancies_hh(area=1, only_with_salary=False, per_page=100,
     }
     response = requests.get(url, params=params)
     response.raise_for_status()
-    vacancies_data = response.json()
-    pages = vacancies_data['pages']
-    vacancies = vacancies_data['items']
+    decoded_response = response.json()
+    pages = decoded_response['pages']
+    vacancies = decoded_response['items']
     for page in range(1, pages):
         vacancies.extend(
             get_vacancies(url=url, params=params, page=page)
@@ -43,7 +43,11 @@ def get_all_vacancies_hh(area=1, only_with_salary=False, per_page=100,
 def get_salaries_stats_hh(popular_languages=POPULAR_LANGUAGES):
     salaries_stats = []
     for language in popular_languages:
-        vacancies = get_all_vacancies_hh(language=language, period=30, only_with_salary=True)
+        vacancies = get_all_vacancies_hh(language=language, period=30, only_with_salary=False)
+        vacancies_amount = len(vacancies)
+        if vacancies_amount < 100:
+            print(f'Вакансий для языка {language} меньше 100')
+            continue
         countable_salaries = tuple(
             salary for vacancy in vacancies if (salary := predict_rub_salary(vacancy))
         )
@@ -55,7 +59,7 @@ def get_salaries_stats_hh(popular_languages=POPULAR_LANGUAGES):
         except ZeroDivisionError:
             average_salary = 'No salary info for this programming language'
         salaries_stats.append(
-            (language, len(vacancies), vacancies_processed, average_salary),
+            (language, vacancies_amount, vacancies_processed, average_salary),
         )
     return salaries_stats
 
@@ -69,6 +73,8 @@ def print_salaries(table_data, title):
                       )
     table_instance = AsciiTable(table_data, title)
     print(table_instance.table)
+    if not table_data:
+        print('Не нашлось подходящих вакансий для статистики')
     print()
 
 
@@ -78,6 +84,8 @@ def predict_rub_salary(vacancy):
         payment_from = vacancy.get('payment_from')
         payment_to = vacancy.get('payment_to')
     elif 'salary' in vacancy:
+        if not vacancy['salary']:
+            return None
         currency = vacancy['salary']['currency']
         payment_from = vacancy['salary'].get('from')
         payment_to = vacancy['salary'].get('to')
@@ -101,8 +109,7 @@ def get_unixdate_month_ago():
     return date_published_from
 
 
-def get_all_vacancies_sj(secret_key, town=4, count=40, language=None):
-    language = language or ''
+def get_all_vacancies_sj(secret_key, town=4, count=40, language=''):
     url = 'https://api.superjob.ru/2.0/vacancies/'
     headers = {'X-Api-App-Id': secret_key}
     date_published_from = get_unixdate_month_ago()
@@ -130,6 +137,10 @@ def get_salaries_stats_sj(secret_key, popular_languages=POPULAR_LANGUAGES):
     salaries_stats = []
     for language in popular_languages:
         vacancies = get_all_vacancies_sj(secret_key=secret_key, language=language)
+        vacancies_amount = len(vacancies)
+        if vacancies_amount < 100:
+            print(f'Вакансий для языка {language} меньше 100')
+            continue
         countable_salaries = tuple(
             salary for vacancy in vacancies if (salary := predict_rub_salary(vacancy))
         )
@@ -141,7 +152,7 @@ def get_salaries_stats_sj(secret_key, popular_languages=POPULAR_LANGUAGES):
         except ZeroDivisionError:
             average_salary = 'No salary info for this programming language'
         salaries_stats.append(
-            (language, len(vacancies), vacancies_processed, average_salary),
+            (language, vacancies_amount, vacancies_processed, average_salary),
         )
     return salaries_stats
 
