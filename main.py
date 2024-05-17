@@ -12,8 +12,6 @@ POPULAR_LANGUAGES = (
 
 def get_vacancies(url, params, page=0):
     params['page'] = page
-    if page == 2:
-        print(params)
     response = requests.get(url, params=params)
     response.raise_for_status()
     return response.json()['items']
@@ -140,7 +138,6 @@ def get_salaries_stats_sj(secret_key, popular_languages=POPULAR_LANGUAGES):
         vacancies = get_all_vacancies_sj(secret_key=secret_key, language=language)
         vacancies_amount = len(vacancies)
         if vacancies_amount < 100:
-            print(f'Вакансий для языка {language} меньше 100')
             continue
         countable_salaries = tuple(
             salary for vacancy in vacancies if (salary := predict_rub_salary(vacancy))
